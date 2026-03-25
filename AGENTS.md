@@ -4,18 +4,20 @@ Concise context for AI coding agents working in this repository.
 
 ## What this repo is
 
-- **Docker Compose + docs + small Python helpers** around the upstream image `ghcr.io/myshell-ai/melotts:latest`.
-- **Not** the MeloTTS engine: do not duplicate or vendor MeloTTS application code. Bugfixes and features belong in [myshell-ai/MeloTTS](https://github.com/myshell-ai/MeloTTS).
+- **Docker Compose + docs + small Python helpers** around MeloTTS, installed via root [Dockerfile](Dockerfile) (**clone + build** at image build time; there is no official pre-built `ghcr.io/myshell-ai/melotts` image).
+- **Not** the MeloTTS engine source tree checked into this repo: do not copy upstream app code here. Bugfixes and features belong in [myshell-ai/MeloTTS](https://github.com/myshell-ai/MeloTTS).
 
 ## Layout
 
 | Path | Role |
 | ---- | ---- |
-| `docker-compose.yml` | Coolify / Traefik stack; external proxy network `TRAEFIK_NETWORK`; backend port **8888** (fixed by upstream image). |
+| `Dockerfile` | Builds MeloTTS from `MELOTTS_REPO` / `MELOTTS_REF` (matches upstream install docs). |
+| `docker-compose.yml` | Coolify / Traefik stack; external proxy network `TRAEFIK_NETWORK`; backend port **8888** (MeloTTS default). |
 | `docker-compose.local.yml` | Standalone local stack; publishes `HOST_PORT` → container **8888**. |
 | `.env.example` | Authoritative list of env vars (comments **English**). |
 | `docs/coolify.md` | Coolify deploy walkthrough. |
 | `docs/openclaw.md` | OpenClaw / TTS integration (Gradio vs local `melo.api`). |
+| `docs/access-control.md` | Locking the public URL (Traefik auth, SSO, VPN). |
 | `scripts/` | CLI using `melo.api`; `requirements.txt` pins `melotts`. |
 
 ## Language
@@ -44,4 +46,4 @@ Concise context for AI coding agents working in this repository.
 
 ## CI
 
-- Workflow: [.github/workflows/ci.yml](.github/workflows/ci.yml) runs `docker compose config` on both compose files. Keep it **fast**: no `docker pull` of MeloTTS in default CI unless explicitly required.
+- Workflow: [.github/workflows/ci.yml](.github/workflows/ci.yml) runs `docker compose config` on both compose files. Keep it **fast**: no `docker build` or MeloTTS image pull in default CI unless explicitly required.

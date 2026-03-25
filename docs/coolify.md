@@ -8,6 +8,7 @@ on a [Coolify](https://coolify.io) instance. Coolify can deploy directly from Gi
 - Coolify with Docker and Traefik (or your reverse proxy) already working.
 - A DNS name that resolves to your server (for TLS via Let’s Encrypt).
 - The **external** Docker network that Traefik uses (see below).
+- **First deploy builds the image** from [Dockerfile](../Dockerfile) (clone MeloTTS, `pip install -e .`, model downloads). Allow enough **RAM**, **disk**, and **build time** (often 10–20+ minutes depending on the host). There is **no** maintained pre-built `ghcr.io/myshell-ai/melotts` image at the time of writing.
 
 ## 1. Find the Traefik network name
 
@@ -49,8 +50,11 @@ If your Docker network is `coolify-proxy`, set `TRAEFIK_NETWORK=coolify-proxy`.
    | `OUTPUT_HOST_DIR`    | Host path for generated audio (bind mount) |
    | `OUTPUT_DIR`         | In-container output path (default `/app/output`) |
    | `TRAEFIK_NETWORK`    | External Traefik Docker network (see step 1) |
+   | `MELOTTS_REPO`       | Git URL to clone at image build (default upstream) |
+   | `MELOTTS_REF`        | Branch or tag to build (default `main`) |
+   | `MELOTTS_IMAGE`      | Name/tag for the built image (optional; set when pushing to a registry) |
 
-5. Deploy. Coolify will pull `ghcr.io/myshell-ai/melotts:latest` and start the stack.
+5. Deploy. Coolify will **build** the MeloTTS image from this repo’s `Dockerfile`, then start the stack. Set `MELOTTS_IMAGE` if you want Coolify to tag/push the build to your own registry.
 
 ## 3. Traefik labels
 
@@ -75,4 +79,4 @@ host policy.
 ## References
 
 - [Coolify documentation](https://coolify.io/docs)
-- [MeloTTS](https://github.com/myshell-ai/MeloTTS) (upstream image and UI)
+- [MeloTTS install guide](https://github.com/myshell-ai/MeloTTS/blob/main/docs/install.md) (upstream; Docker build/run examples)

@@ -1,6 +1,12 @@
 services:
   melotts:
-    image: ghcr.io/myshell-ai/melotts:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MELOTTS_REPO: ${MELOTTS_REPO:-https://github.com/myshell-ai/MeloTTS.git}
+        MELOTTS_REF: ${MELOTTS_REF:-main}
+    image: ${MELOTTS_IMAGE:-melotts-coolify:local}
     container_name: ${SERVICE_NAME:-melotts}
     restart: unless-stopped
     environment:
@@ -14,6 +20,10 @@ services:
       - traefik.http.routers.melotts.entrypoints=websecure
       - traefik.http.routers.melotts.tls.certresolver=letsencrypt
       - traefik.http.services.melotts.loadbalancer.server.port=8888
+      # Optional: gate the UI with Traefik Basic Auth (set TRAEFIK_BASIC_AUTH_USERS in .env).
+      # See docs/access-control.md
+      # - traefik.http.routers.melotts.middlewares=melotts-auth
+      # - traefik.http.middlewares.melotts-auth.basicauth.users=${TRAEFIK_BASIC_AUTH_USERS}
     networks:
       - traefik_network
     healthcheck:

@@ -4,9 +4,9 @@ Thanks for helping improve **melotts-coolify**.
 
 ## Scope
 
-This repo hosts Docker Compose configuration, docs, and small helper scripts
-around the upstream [MeloTTS](https://github.com/myshell-ai/MeloTTS) image.
-Changes that belong upstream (model code, Gradio app, image build) should go
+This repo hosts Docker Compose configuration, a root **Dockerfile** that clones
+and builds [MeloTTS](https://github.com/myshell-ai/MeloTTS), docs, and small helper scripts.
+Changes that belong upstream (model code, Gradio app, upstream Dockerfile) should go
 to the MeloTTS project instead.
 
 ## How to contribute

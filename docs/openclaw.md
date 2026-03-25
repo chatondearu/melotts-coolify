@@ -5,9 +5,8 @@ setup. Pick the one that matches where your agent runs and how you expose audio.
 
 ## A. Gradio Web UI over HTTPS (human or custom automation)
 
-The official image `ghcr.io/myshell-ai/melotts:latest` runs a **Gradio** UI on
-**port 8888** inside the container. There is **no stable, documented public REST
-API** in the stock image for generic HTTP clients.
+The container built from this repo’s [Dockerfile](../Dockerfile) (upstream MeloTTS) runs a **Gradio** UI on
+**port 8888**. There is **no stable, documented public REST API** in that stock setup for generic HTTP clients.
 
 After you deploy with Coolify (or [docker-compose.local.yml](../docker-compose.local.yml)),
 you can open:

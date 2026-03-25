@@ -7,16 +7,22 @@ Deploy [**MeloTTS**](https://github.com/myshell-ai/MeloTTS) with **Docker Compos
 
 ## Features
 
-- French-first voices (and other MeloTTS languages) via the upstream image.
+- French-first voices (and other MeloTTS languages) via an image **built from official MeloTTS source** (this repo’s `Dockerfile`).
 - **Coolify-ready** Compose file with Traefik labels and an external proxy network.
 - **Local compose** variant with a published port (no Traefik).
 - **OpenClaw-oriented** docs: Web UI vs local Python `melo.api` (see [docs/openclaw.md](docs/openclaw.md)).
 
-This repository is **configuration and documentation** only. The speech engine is [myshell-ai/MeloTTS](https://github.com/myshell-ai/MeloTTS) (`ghcr.io/myshell-ai/melotts:latest`).
+This repository is **configuration, a build wrapper, and documentation** only. The speech engine is [myshell-ai/MeloTTS](https://github.com/myshell-ai/MeloTTS).
+
+### Docker image note
+
+There is **no** reliably available pre-built image such as `ghcr.io/myshell-ai/melotts:latest` (that path is not published as a public package you can pull). This project therefore uses a [Dockerfile](Dockerfile) that follows the upstream instructions: `git clone`, `pip install -e .`, `python -m unidic download`, `python melo/init_downloads.py`, then `melo/app.py` on port **8888**. See the official [install guide](https://github.com/myshell-ai/MeloTTS/blob/main/docs/install.md) for CLI, Web UI, and Python API usage inside the container or on bare metal.
+
+**First `docker compose up --build`**: expect a **long** build, large downloads, and sufficient **RAM/disk** on the builder.
 
 ## Requirements
 
-- Docker 24+ and Docker Compose v2.
+- Docker 24+ and Docker Compose v2 (with build support).
 - For Coolify: a running Coolify instance with Traefik (or compatible proxy) and a DNS name.
 - For local use: nothing beyond Docker (see below).
 
@@ -25,15 +31,15 @@ This repository is **configuration and documentation** only. The speech engine i
 1. Fork or clone this repo and connect it in Coolify as a **Docker Compose** resource (`docker-compose.yml` at repo root).
 2. On the server, find the **external** Docker network used by Traefik (`docker network ls`), then set `TRAEFIK_NETWORK` accordingly.
 3. Set variables from [.env.example](.env.example) in the Coolify UI (see [docs/coolify.md](docs/coolify.md) for a full walkthrough).
-4. Deploy and open `https://${TRAEFIK_SUBDOMAIN}.${DOMAIN}` — you should get the **Gradio** MeloTTS UI.
+4. Deploy (build + run) and open `https://${TRAEFIK_SUBDOMAIN}.${DOMAIN}` — you should get the **Gradio** MeloTTS UI.
 
 ## Local development (no Traefik)
 
 ```bash
 cp .env.example .env
-# Edit .env if needed (HOST_PORT, OUTPUT_HOST_DIR, …)
+# Edit .env if needed (HOST_PORT, OUTPUT_HOST_DIR, MELOTTS_REF, …)
 
-docker compose -f docker-compose.local.yml up -d
+docker compose -f docker-compose.local.yml up --build -d
 ```
 
 Open `http://localhost:${HOST_PORT:-8888}` (default **8888**).
@@ -48,6 +54,9 @@ docker compose -f docker-compose.local.yml down
 
 | Variable | Description |
 | -------- | ----------- |
+| `MELOTTS_REPO` | Git URL cloned at **image build** (default upstream MeloTTS). |
+| `MELOTTS_REF` | Branch or tag to build (default `main`). |
+| `MELOTTS_IMAGE` | Image name:tag after build (default `melotts-coolify:local`). |
 | `SERVICE_NAME` | Container name (`melotts` by default). |
 | `TRAEFIK_SUBDOMAIN` | Subdomain for Traefik (e.g. `tts` → `tts.example.com`). |
 | `DOMAIN` | Apex domain (e.g. `example.com`). |
@@ -58,7 +67,7 @@ docker compose -f docker-compose.local.yml down
 
 ## OpenClaw
 
-The stock MeloTTS container exposes a **Gradio UI** on port **8888**; there is **no official stable REST API** in that image for generic automation. For agents, the recommended path is usually the **local Python** script in `scripts/`. Details: [docs/openclaw.md](docs/openclaw.md).
+The MeloTTS container exposes a **Gradio UI** on port **8888**; there is **no official stable REST API** in that setup for generic automation. For agents, the recommended path is usually the **local Python** script in `scripts/`. Details: [docs/openclaw.md](docs/openclaw.md).
 
 ## Scripts
 
@@ -66,7 +75,7 @@ See [scripts/README.md](scripts/README.md) and [scripts/requirements.txt](script
 
 ## CI
 
-GitHub Actions validates Compose files with `docker compose ... config` (no image pull or TTS inference). Workflow: [.github/workflows/ci.yml](.github/workflows/ci.yml).
+GitHub Actions validates Compose files with `docker compose ... config` (no image build, pull, or TTS inference). Workflow: [.github/workflows/ci.yml](.github/workflows/ci.yml).
 
 ## Contributing
 
@@ -74,7 +83,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). For **AI coding agents** (scope, compose
 
 ## Security
 
-See [SECURITY.md](SECURITY.md).
+See [SECURITY.md](SECURITY.md). The Gradio UI is **not** password-protected by
+default; for anything reachable from the internet, add a proxy gate — start
+with [docs/access-control.md](docs/access-control.md) (Traefik Basic Auth,
+SSO / ForwardAuth, VPN or IP allowlist).
 
 ## License
 
@@ -85,5 +97,6 @@ Upstream MeloTTS has its own license — see the [MeloTTS repository](https://gi
 ## References
 
 - [MeloTTS](https://github.com/myshell-ai/MeloTTS)
+- [MeloTTS install / Docker](https://github.com/myshell-ai/MeloTTS/blob/main/docs/install.md)
 - [Coolify](https://coolify.io)
 - [Traefik](https://traefik.io)

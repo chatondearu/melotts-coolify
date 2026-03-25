@@ -3,8 +3,8 @@
 ## Supported versions
 
 Security-sensitive fixes are considered for the **default branch** of this
-repository (Compose files, docs, and scripts). The MeloTTS **container image** is
-maintained upstream; report engine and dependency issues to
+repository (Compose files, Dockerfile wrapper, docs, and scripts). The MeloTTS
+**engine and official install paths** are maintained upstream; report engine and dependency issues to
 [myshell-ai/MeloTTS](https://github.com/myshell-ai/MeloTTS).
 
 ## Reporting a vulnerability
@@ -27,4 +27,7 @@ availability.
 - Never commit real `.env` files or secrets.
 - Exposing MeloTTS on the public internet should always use **TLS** and your
   org’s authentication/access policies — the stock Gradio UI is not a
-  multi-tenant product by itself.
+  multi-tenant product by itself and has **no login** by default.
+- See [docs/access-control.md](docs/access-control.md) for **Traefik Basic Auth**,
+  ForwardAuth / SSO, IP allowlists, and private-network options.
+

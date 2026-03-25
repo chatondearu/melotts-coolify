@@ -18,6 +18,9 @@ jobs:
 
       - name: Validate Coolify stack (docker-compose.yml)
         env:
+          MELOTTS_REPO: https://github.com/myshell-ai/MeloTTS.git
+          MELOTTS_REF: main
+          MELOTTS_IMAGE: melotts-coolify:local
           SERVICE_NAME: melotts
           TRAEFIK_SUBDOMAIN: tts
           DOMAIN: example.com
@@ -28,6 +31,9 @@ jobs:
 
       - name: Validate local stack (docker-compose.local.yml)
         env:
+          MELOTTS_REPO: https://github.com/myshell-ai/MeloTTS.git
+          MELOTTS_REF: main
+          MELOTTS_IMAGE: melotts-coolify:local
           SERVICE_NAME: melotts
           OUTPUT_HOST_DIR: ./output
           OUTPUT_DIR: /app/output
