@@ -18,7 +18,7 @@ This repository is **configuration, a build wrapper, and documentation** only. T
 
 There is **no** reliably available pre-built image such as `ghcr.io/myshell-ai/melotts:latest` (that path is not published as a public package you can pull). This project therefore uses a [Dockerfile](Dockerfile) that follows the upstream instructions: `git clone`, **PyTorch from `TORCH_INDEX_URL`** (CPU by default — avoids huge CUDA resolution on small builders), `pip install -e .`, `python -m unidic download`, `python melo/init_downloads.py`, then `melo/app.py` on port **8888**. See the official [install guide](https://github.com/myshell-ai/MeloTTS/blob/main/docs/install.md) for CLI, Web UI, and Python API usage inside the container or on bare metal.
 
-**First `docker compose up --build`**: expect a substantial build with large downloads and sufficient **RAM/disk** on the builder; CPU PyTorch by default keeps this more predictable than an unconstrained `torch` install from PyPI.
+**First `docker compose up --build`**: expect a substantial build with large downloads and sufficient **RAM/disk** on the builder; CPU PyTorch by default keeps this more predictable than an unconstrained `torch` install from PyPI. The [Dockerfile](Dockerfile) also patches upstream `torch.load` usage for **PyTorch 2.6+** (adds `weights_only=False`) so `melo/init_downloads.py` can load Hugging Face checkpoints during the image build.
 
 ## Requirements
 

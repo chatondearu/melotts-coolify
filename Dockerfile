@@ -18,6 +18,33 @@ ARG MELOTTS_REF=main
 
 RUN git clone --depth 1 --branch "${MELOTTS_REF}" "${MELOTTS_REPO}" .
 
+# PyTorch 2.6+ defaults torch.load(..., weights_only=True). MeloTTS checkpoints are full
+# pickles; loading them fails without weights_only=False. See melo/download_utils.py and
+# melo/utils.py upstream.
+RUN python <<'PY'
+from pathlib import Path
+
+replacements = [
+    (
+        Path("melo/download_utils.py"),
+        "return torch.load(ckpt_path, map_location=device)",
+        "return torch.load(ckpt_path, map_location=device, weights_only=False)",
+    ),
+    (
+        Path("melo/utils.py"),
+        'checkpoint_dict = torch.load(checkpoint_path, map_location="cpu")',
+        'checkpoint_dict = torch.load(checkpoint_path, map_location="cpu", weights_only=False)',
+    ),
+]
+for path, old, new in replacements:
+    text = path.read_text()
+    if new in text:
+        continue
+    if old not in text:
+        raise SystemExit(f"Expected snippet missing in {path}, cannot patch torch.load")
+    path.write_text(text.replace(old, new, 1))
+PY
+
 # Install PyTorch from the official wheel index first so pip does not pull CUDA stacks
 # from PyPI (long backtracking / huge downloads that often time out on small builders).
 # Override at build time via TORCH_INDEX_URL (e.g. cu121) if you build for GPU.
