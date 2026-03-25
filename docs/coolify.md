@@ -84,7 +84,7 @@ host policy.
 Coolify may report **exit code 255** when the compose build is **stopped externally** before pip finishes—often a **deployment/build timeout** or the helper container hitting **memory limits** during the heavy `pip install -e .` step. The [Dockerfile](../Dockerfile) uses [pip-constraints.txt](../pip-constraints.txt) to pin Gradio and `networkx` so resolution stays fast and needs less RAM; if it still fails:
 
 - Raise the **build timeout** (and builder **memory**) for this resource in Coolify if your plan allows it.
-- Retry: transient Hugging Face or CDN issues during `init_downloads` can also fail the final image layers.
+- Retry: transient CDN issues during `init_downloads` can still fail a layer; the image build uses MyShell **S3** mirrors (`use_hf=False` patches in the Dockerfile) instead of Hugging Face for default checkpoints to reduce builder failures.
 
 ## References
 

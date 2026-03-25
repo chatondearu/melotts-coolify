@@ -11,7 +11,7 @@ Concise context for AI coding agents working in this repository.
 
 | Path | Role |
 | ---- | ---- |
-| `Dockerfile` | Builds MeloTTS from `MELOTTS_REPO` / `MELOTTS_REF` on **`python:3.9-slim-bookworm`**. Installs **`torch` / `torchaudio` first** from **`TORCH_INDEX_URL`**, then **`pip install -e . -c /tmp/pip-constraints.txt`** (`pip-constraints.txt` pins Gradio / networkx to avoid slow pip backtracking and OOM/timeouts on Coolify). Patches **`torch.load`** for PyTorch 2.6+ (`weights_only=False`) before installing torch. |
+| `Dockerfile` | Builds MeloTTS from `MELOTTS_REPO` / `MELOTTS_REF` on **`python:3.9-slim-bookworm`**. Installs **`torch` / `torchaudio` first** from **`TORCH_INDEX_URL`**, then **`pip install -e . -c /tmp/pip-constraints.txt`**. After clone, patches **`torch.load`** (`weights_only=False`) and **`TTS(..., use_hf=False)`** in **`init_downloads.py`**, **`app.py`**, **`main.py`** so weights load from MyShell S3 (not Hugging Face) during build and at WebUI startup. |
 | `pip-constraints.txt` | Pip constraint file copied into the image; keep in sync with what a clean `pip install -e .` resolves for `gradio`, `gradio-client`, and `networkx` (<3 for gruut). |
 | `docker-compose.yml` | Coolify / Traefik stack; external proxy network `TRAEFIK_NETWORK`; backend port **8888** (MeloTTS default). |
 | `docker-compose.local.yml` | Standalone local stack; publishes `HOST_PORT` → container **8888**. |
