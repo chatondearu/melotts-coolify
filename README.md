@@ -70,7 +70,7 @@ GitHub Actions validates Compose files with `docker compose ... config` (no imag
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md). For **AI coding agents** (scope, compose rules, language policy), see [AGENTS.md](AGENTS.md).
 
 ## Security
 
