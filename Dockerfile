@@ -2,15 +2,21 @@
 # This Dockerfile mirrors the upstream repo instructions: clone, pip install -e ., unidic, init_downloads.
 # See: https://github.com/myshell-ai/MeloTTS/blob/main/docs/install.md
 
-FROM python:3.9-slim
+FROM python:3.9-slim-bookworm
 
 WORKDIR /app
+
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     build-essential \
     libsndfile1 \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+
+# From this repo (not the MeloTTS clone); tightens pip resolution for Gradio / networkx.
+COPY pip-constraints.txt /tmp/pip-constraints.txt
 
 ARG MELOTTS_REPO=https://github.com/myshell-ai/MeloTTS.git
 # Shallow clone: use a branch name (e.g. main) or a tag name known on the remote.
@@ -52,7 +58,8 @@ ARG TORCH_INDEX_URL=https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
     && pip install --no-cache-dir torch torchaudio --index-url "${TORCH_INDEX_URL}"
 
-RUN pip install --no-cache-dir -e .
+# Use constraints to avoid long Gradio backtracking and torch vs gruut networkx clashes.
+RUN pip install --no-cache-dir -e . -c /tmp/pip-constraints.txt
 RUN python -m unidic download
 RUN python melo/init_downloads.py
 

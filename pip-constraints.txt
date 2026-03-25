@@ -1,0 +1,7 @@
+# Constraints for `pip install -e .` inside the MeloTTS clone (see Dockerfile).
+# Upstream requirements.txt lists `gradio` unpinned; pip then explores many versions
+# (slow, high memory) on constrained builders such as Coolify.
+# gruut (MeloTTS) requires networkx<3 while a fresh torch install may pull networkx 3.x.
+gradio==4.26.0
+gradio-client==0.15.1
+networkx==2.8.8
