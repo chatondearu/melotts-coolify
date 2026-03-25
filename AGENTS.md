@@ -33,6 +33,7 @@ Concise context for AI coding agents working in this repository.
    ```bash
    SERVICE_NAME=melotts TRAEFIK_SUBDOMAIN=tts DOMAIN=example.com \
      OUTPUT_HOST_DIR=./output OUTPUT_DIR=/app/output TRAEFIK_NETWORK=traefik_network \
+     TRAEFIK_BASIC_AUTH_USERS='ciuser:$apr1$qZ2lDl9/$Yj5X2.Zpp9aGEO1HANtHi/' \
      docker compose -f docker-compose.yml config --quiet
    OUTPUT_HOST_DIR=./output OUTPUT_DIR=/app/output HOST_PORT=8888 \
      docker compose -f docker-compose.local.yml config --quiet
@@ -42,7 +43,7 @@ Concise context for AI coding agents working in this repository.
 ## Security & scope
 
 - Never commit `.env` or secrets (see [.gitignore](.gitignore)).
-- Prefer documenting risky behaviors (public Gradio, no built-in auth) in [SECURITY.md](SECURITY.md) / [docs/openclaw.md](docs/openclaw.md) rather than silently widening attack surface.
+- Prefer documenting risky behaviors (public Gradio, weak Basic Auth passwords) in [SECURITY.md](SECURITY.md) / [docs/access-control.md](docs/access-control.md) rather than silently widening attack surface.
 
 ## CI
 

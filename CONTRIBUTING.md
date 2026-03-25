@@ -25,7 +25,8 @@ docker compose -f docker-compose.local.yml config
 ```
 
 Use the environment variables documented in `.env.example` (or export minimal
-values as in CI).
+values as in CI), including `TRAEFIK_BASIC_AUTH_USERS` when validating
+`docker-compose.yml`.
 
 ## Badges
 

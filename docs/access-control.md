@@ -1,16 +1,32 @@
 # Controlling who can open the MeloTTS URL
 
 The upstream **Gradio** WebUI does **not** enable authentication: anyone who can
-reach `https://tts.example.com` can use synthesis. Treat public exposure as
-**equivalent to running an anonymous compute endpoint** (DoS, cost, abuse).
+reach `https://tts.example.com` can use synthesis unless you add a reverse-proxy
+gate. Treat public exposure as **equivalent to running an anonymous compute
+endpoint** (DoS, cost, abuse).
 
-Below are practical patterns. Prefer **TLS + an identity layer** you already run
-(OIDC, SSO) for anything beyond a personal or lab deployment.
+## Default in this repository (Coolify stack)
 
-## 1. Traefik Basic Auth (simplest)
+[`docker-compose.yml`](../docker-compose.yml) enables **Traefik Basic Auth** by
+default. You **must** set `TRAEFIK_BASIC_AUTH_USERS` (see below). Compose fails at
+config time if it is unset (`:?` interpolation).
+
+[`docker-compose.local.yml`](../docker-compose.local.yml) has **no** Traefik
+layer (localhost only) — Basic Auth does not apply there.
+
+To **turn off** proxy Basic Auth (not recommended on the public internet), remove
+the `traefik.http.routers.melotts.middlewares` label and the
+`traefik.http.middlewares.melotts-auth.*` labels from `docker-compose.yml`, and
+use another control (SSO, VPN, IP allowlist) if the route stays public.
+
+Below are details and stronger patterns. Prefer **TLS + an identity layer** you
+already run (OIDC, SSO) for anything beyond a personal or lab deployment.
+
+## 1. Traefik Basic Auth (default for Coolify)
 
 Put HTTP Basic Authentication **in front of** the service using Traefik
-middlewares. Users must send a browser login before Gradio loads.
+middlewares. Users must send a browser login before Gradio loads. Labels are
+already wired in `docker-compose.yml`; you only supply the user digest.
 
 ### 1.1 Create a user digest
 
@@ -39,18 +55,11 @@ TRAEFIK_BASIC_AUTH_USERS=myuser:$$2y$$05$$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 For **multiple** users, separate with a comma (each user still uses `htpasswd` format).
 
-### 1.3 Extra Traefik labels
+### 1.3 Traefik labels
 
-Add these labels **next to** your existing `traefik.http.routers.melotts.*`
-labels in `docker-compose.yml` (same router name `melotts`):
-
-```yaml
-      # Optional: require login before Gradio (see docs/access-control.md)
-      - traefik.http.routers.melotts.middlewares=melotts-auth
-      - traefik.http.middlewares.melotts-auth.basicauth.users=${TRAEFIK_BASIC_AUTH_USERS}
-```
-
-Redeploy. Browsers will prompt for user / password.
+These are **already present** in [`docker-compose.yml`](../docker-compose.yml).
+After setting `TRAEFIK_BASIC_AUTH_USERS`, redeploy; browsers will prompt for
+user / password.
 
 **Limits:** shared password, no per-user audit UX, credential leak if HTTP were
 ever used (you use `websecure` — good). Rotate the hash if a password is exposed.
@@ -95,10 +104,11 @@ document so you do not define two conflicting routers for the same host.
 
 | Approach            | Effort | Typical use case        |
 | ------------------- | ------ | ----------------------- |
-| Traefik Basic Auth  | Low    | Small team, quick fence |
+| Traefik Basic Auth  | Low    | Default on `docker-compose.yml`; small teams |
 | ForwardAuth + OIDC  | Medium | Production, real users  |
 | VPN / private only  | Medium | Internal tools          |
 | Edge (Cloudflare)   | Medium | Already on Cloudflare   |
 
-For this repository, **Traefik Basic Auth** or **ForwardAuth** are the usual answers;
-there is **no pre-configured token** in MeloTTS itself.
+For this repository, **`docker-compose.yml` ships with Traefik Basic Auth**
+(`TRAEFIK_BASIC_AUTH_USERS`). Upgrade to **ForwardAuth** + OIDC for stricter
+needs. There is **no pre-configured URL token** in MeloTTS itself.

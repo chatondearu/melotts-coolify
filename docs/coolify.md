@@ -53,14 +53,16 @@ If your Docker network is `coolify-proxy`, set `TRAEFIK_NETWORK=coolify-proxy`.
    | `MELOTTS_REPO`       | Git URL to clone at image build (default upstream) |
    | `MELOTTS_REF`        | Branch or tag to build (default `main`) |
    | `MELOTTS_IMAGE`      | Name/tag for the built image (optional; set when pushing to a registry) |
+   | `TRAEFIK_BASIC_AUTH_USERS` | **Required.** One or more `htpasswd` user digests for Traefik Basic Auth (browser login before Gradio). See [docs/access-control.md](access-control.md). |
 
-5. Deploy. Coolify will **build** the MeloTTS image from this repo’s `Dockerfile`, then start the stack. Set `MELOTTS_IMAGE` if you want Coolify to tag/push the build to your own registry.
+5. Deploy. Coolify will **build** the MeloTTS image from this repo’s `Dockerfile`, then start the stack. Set `MELOTTS_IMAGE` if you want Coolify to tag/push the build to your own registry. The public route is protected by **Basic Auth** unless you remove those labels (see access-control doc).
 
 ## 3. Traefik labels
 
 The service is exposed with a Traefik `Host()` rule built from `TRAEFIK_SUBDOMAIN` and `DOMAIN` on the
 `websecure` entrypoint and the `letsencrypt` certificate resolver, matching a
-typical Coolify + Traefik setup. If your instance uses different entrypoint or
+typical Coolify + Traefik setup. A **Basic Auth** middleware is attached by default
+(`TRAEFIK_BASIC_AUTH_USERS`). If your instance uses different entrypoint or
 resolver names, adjust the labels in `docker-compose.yml` (or use Coolify’s
 UI-generated proxy settings if you prefer managing routes there).
 

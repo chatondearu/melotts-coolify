@@ -28,6 +28,7 @@ availability.
 - Exposing MeloTTS on the public internet should always use **TLS** and your
   org’s authentication/access policies — the stock Gradio UI is not a
   multi-tenant product by itself and has **no login** by default.
-- See [docs/access-control.md](docs/access-control.md) for **Traefik Basic Auth**,
-  ForwardAuth / SSO, IP allowlists, and private-network options.
+- The **Coolify** compose stack enables **Traefik Basic Auth** by default; set
+  `TRAEFIK_BASIC_AUTH_USERS`. See [docs/access-control.md](docs/access-control.md)
+  for digests, ForwardAuth / SSO, IP allowlists, and private-network options.
 

@@ -64,6 +64,7 @@ docker compose -f docker-compose.local.yml down
 | `OUTPUT_HOST_DIR` | Host directory bind-mounted to `/app/output`. |
 | `OUTPUT_DIR` | In-container output path (default `/app/output`). |
 | `TRAEFIK_NETWORK` | Real Docker network name Traefik uses (external network in prod compose). |
+| `TRAEFIK_BASIC_AUTH_USERS` | **Required** for `docker-compose.yml`: htpasswd line for Traefik Basic Auth (see [docs/access-control.md](docs/access-control.md)). Not used by `docker-compose.local.yml`. |
 
 ## OpenClaw
 
@@ -83,10 +84,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). For **AI coding agents** (scope, compose
 
 ## Security
 
-See [SECURITY.md](SECURITY.md). The Gradio UI is **not** password-protected by
-default; for anything reachable from the internet, add a proxy gate — start
-with [docs/access-control.md](docs/access-control.md) (Traefik Basic Auth,
-SSO / ForwardAuth, VPN or IP allowlist).
+See [SECURITY.md](SECURITY.md). The **Coolify** compose file enables **Traefik
+Basic Auth** by default; you must set `TRAEFIK_BASIC_AUTH_USERS`. For stronger
+controls (SSO, VPN, IP allowlist), see [docs/access-control.md](docs/access-control.md).
 
 ## License
 
