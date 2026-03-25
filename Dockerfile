@@ -76,7 +76,9 @@ PY
 # from PyPI (long backtracking / huge downloads that often time out on small builders).
 # Override at build time via TORCH_INDEX_URL (e.g. cu121) if you build for GPU.
 ARG TORCH_INDEX_URL=https://download.pytorch.org/whl/cpu
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
+# Do not upgrade setuptools to 82+: pkg_resources was removed; librosa imports it (MeloTTS).
+RUN pip install --no-cache-dir --upgrade pip wheel \
+    && pip install --no-cache-dir "setuptools>=69,<82" \
     && pip install --no-cache-dir torch torchaudio --index-url "${TORCH_INDEX_URL}"
 
 # Use constraints to avoid long Gradio backtracking and torch vs gruut networkx clashes.
