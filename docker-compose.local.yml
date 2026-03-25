@@ -1,0 +1,37 @@
+# Local stack: MeloTTS on the default bridge with published port (no Traefik).
+# Usage:
+#   docker compose -f docker-compose.local.yml up -d
+#
+# Open http://localhost:${HOST_PORT:-8888} in your browser.
+
+services:
+  melotts:
+    image: ghcr.io/myshell-ai/melotts:latest
+    container_name: ${SERVICE_NAME:-melotts}
+    restart: unless-stopped
+    environment:
+      - OUTPUT_DIR=${OUTPUT_DIR:-/app/output}
+    volumes:
+      - ${OUTPUT_HOST_DIR:-./output}:/app/output
+    ports:
+      - "${HOST_PORT:-8888}:8888"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8888/')\"",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge

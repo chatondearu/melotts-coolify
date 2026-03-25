@@ -1,0 +1,2 @@
+# Pin for reproducible installs; bump after testing upgrades.
+melotts>=0.1.2,<0.2.0

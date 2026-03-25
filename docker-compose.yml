@@ -1,0 +1,37 @@
+services:
+  melotts:
+    image: ghcr.io/myshell-ai/melotts:latest
+    container_name: ${SERVICE_NAME:-melotts}
+    restart: unless-stopped
+    environment:
+      - OUTPUT_DIR=${OUTPUT_DIR:-/app/output}
+    volumes:
+      - ${OUTPUT_HOST_DIR:-./output}:/app/output
+    # Traefik backend port must match the upstream image (MeloTTS listens on 8888).
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.melotts.rule=Host(`${TRAEFIK_SUBDOMAIN}.${DOMAIN}`)
+      - traefik.http.routers.melotts.entrypoints=websecure
+      - traefik.http.routers.melotts.tls.certresolver=letsencrypt
+      - traefik.http.services.melotts.loadbalancer.server.port=8888
+    networks:
+      - traefik_network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8888/')\"",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+networks:
+  traefik_network:
+    name: ${TRAEFIK_NETWORK:-traefik_network}
+    external: true
