@@ -6,6 +6,7 @@ services:
       args:
         MELOTTS_REPO: ${MELOTTS_REPO:-https://github.com/myshell-ai/MeloTTS.git}
         MELOTTS_REF: ${MELOTTS_REF:-main}
+        TORCH_INDEX_URL: ${TORCH_INDEX_URL:-https://download.pytorch.org/whl/cpu}
     image: ${MELOTTS_IMAGE:-melotts-coolify:local}
     container_name: ${SERVICE_NAME:-melotts}
     restart: unless-stopped

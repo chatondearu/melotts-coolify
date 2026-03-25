@@ -18,6 +18,13 @@ ARG MELOTTS_REF=main
 
 RUN git clone --depth 1 --branch "${MELOTTS_REF}" "${MELOTTS_REPO}" .
 
+# Install PyTorch from the official wheel index first so pip does not pull CUDA stacks
+# from PyPI (long backtracking / huge downloads that often time out on small builders).
+# Override at build time via TORCH_INDEX_URL (e.g. cu121) if you build for GPU.
+ARG TORCH_INDEX_URL=https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir torch torchaudio --index-url "${TORCH_INDEX_URL}"
+
 RUN pip install --no-cache-dir -e .
 RUN python -m unidic download
 RUN python melo/init_downloads.py

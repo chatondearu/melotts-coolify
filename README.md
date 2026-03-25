@@ -16,9 +16,9 @@ This repository is **configuration, a build wrapper, and documentation** only. T
 
 ### Docker image note
 
-There is **no** reliably available pre-built image such as `ghcr.io/myshell-ai/melotts:latest` (that path is not published as a public package you can pull). This project therefore uses a [Dockerfile](Dockerfile) that follows the upstream instructions: `git clone`, `pip install -e .`, `python -m unidic download`, `python melo/init_downloads.py`, then `melo/app.py` on port **8888**. See the official [install guide](https://github.com/myshell-ai/MeloTTS/blob/main/docs/install.md) for CLI, Web UI, and Python API usage inside the container or on bare metal.
+There is **no** reliably available pre-built image such as `ghcr.io/myshell-ai/melotts:latest` (that path is not published as a public package you can pull). This project therefore uses a [Dockerfile](Dockerfile) that follows the upstream instructions: `git clone`, **PyTorch from `TORCH_INDEX_URL`** (CPU by default — avoids huge CUDA resolution on small builders), `pip install -e .`, `python -m unidic download`, `python melo/init_downloads.py`, then `melo/app.py` on port **8888**. See the official [install guide](https://github.com/myshell-ai/MeloTTS/blob/main/docs/install.md) for CLI, Web UI, and Python API usage inside the container or on bare metal.
 
-**First `docker compose up --build`**: expect a **long** build, large downloads, and sufficient **RAM/disk** on the builder.
+**First `docker compose up --build`**: expect a substantial build with large downloads and sufficient **RAM/disk** on the builder; CPU PyTorch by default keeps this more predictable than an unconstrained `torch` install from PyPI.
 
 ## Requirements
 
@@ -57,6 +57,7 @@ docker compose -f docker-compose.local.yml down
 | `MELOTTS_REPO` | Git URL cloned at **image build** (default upstream MeloTTS). |
 | `MELOTTS_REF` | Branch or tag to build (default `main`). |
 | `MELOTTS_IMAGE` | Image name:tag after build (default `melotts-coolify:local`). |
+| `TORCH_INDEX_URL` | PyTorch wheel index at **image build** (default CPU: `https://download.pytorch.org/whl/cpu`). |
 | `SERVICE_NAME` | Container name (`melotts` by default). |
 | `TRAEFIK_SUBDOMAIN` | Subdomain for Traefik (e.g. `tts` → `tts.example.com`). |
 | `DOMAIN` | Apex domain (e.g. `example.com`). |

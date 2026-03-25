@@ -11,7 +11,7 @@ Concise context for AI coding agents working in this repository.
 
 | Path | Role |
 | ---- | ---- |
-| `Dockerfile` | Builds MeloTTS from `MELOTTS_REPO` / `MELOTTS_REF` (matches upstream install docs). |
+| `Dockerfile` | Builds MeloTTS from `MELOTTS_REPO` / `MELOTTS_REF`. Installs **`torch` / `torchaudio` first** from **`TORCH_INDEX_URL`** (default CPU PyTorch index), then `pip install -e .`, so pip does not pull CUDA stacks from PyPI (faster, fewer failed builds). |
 | `docker-compose.yml` | Coolify / Traefik stack; external proxy network `TRAEFIK_NETWORK`; backend port **8888** (MeloTTS default). |
 | `docker-compose.local.yml` | Standalone local stack; publishes `HOST_PORT` → container **8888**. |
 | `.env.example` | Authoritative list of env vars (comments **English**). |
