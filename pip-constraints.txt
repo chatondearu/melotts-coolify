@@ -4,6 +4,9 @@
 # gruut (MeloTTS) requires networkx<3 while a fresh torch install may pull networkx 3.x.
 # setuptools>=82 removed pkg_resources; librosa (MeloTTS) still imports it at runtime.
 setuptools>=69,<82
+# Pydantic 2.11+ emits JSON Schema with boolean additionalProperties; gradio-client
+# 0.15.x then crashes in json_schema_to_python_type (TypeError: bool is not iterable).
+pydantic>=2.0,<2.11
 gradio==4.26.0
 gradio-client==0.15.1
 networkx==2.8.8
