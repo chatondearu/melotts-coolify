@@ -11,23 +11,14 @@ services:
     container_name: ${SERVICE_NAME:-melotts}
     restart: unless-stopped
     environment:
-      # Coolify: declare SERVICE_FQDN_MELOTTS (no value) so the platform injects the real FQDN for Traefik — see docs/coolify.md
-      - SERVICE_FQDN_MELOTTS
       - OUTPUT_DIR=${OUTPUT_DIR:-/app/output}
     volumes:
       - ${OUTPUT_HOST_DIR:-./output}:/app/output
-    # Traefik backend port must match the upstream image (MeloTTS listens on 8888).
+    # Routing/TLS: configure the service domain in Coolify (e.g. https://tts.example.com:8888 — :8888 is the container port MeloTTS uses).
+    # Do not duplicate Traefik router rules here; Coolify merges its proxy labels with the ones below.
+    # Basic Auth middleware only (Coolify attaches it to the generated router): https://coolify.io/docs/knowledge-base/proxy/traefik/basic-auth#docker-compose-and-services
     labels:
       - traefik.enable=true
-      # Coolify Traefik uses entrypoint "https" (not "websecure"). Host must be a real FQDN: Coolify sets SERVICE_FQDN_MELOTTS; locally use TRAEFIK_SUBDOMAIN + DOMAIN via the fallback below.
-      - traefik.http.routers.melotts.rule=Host(`${SERVICE_FQDN_MELOTTS:-${TRAEFIK_SUBDOMAIN}.${DOMAIN}}`)
-      - traefik.http.routers.melotts.entrypoints=https
-      - traefik.http.routers.melotts.tls.certresolver=letsencrypt
-      - traefik.http.services.melotts.loadbalancer.server.port=8888
-      # Basic Auth on by default for Coolify (Gradio has no login). Set TRAEFIK_BASIC_AUTH_USERS.
-      # In .env files, double every $ in the hash (see docs/access-control.md).
-      # To disable: remove the middlewares router label and the two melotts-auth middleware labels below.
-      - traefik.http.routers.melotts.middlewares=melotts-auth
       - traefik.http.middlewares.melotts-auth.basicauth.users=${TRAEFIK_BASIC_AUTH_USERS:?Set TRAEFIK_BASIC_AUTH_USERS for Traefik Basic Auth (see docs/access-control.md)}
     healthcheck:
       test:

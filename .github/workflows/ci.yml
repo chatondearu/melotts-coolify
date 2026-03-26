@@ -22,8 +22,6 @@ jobs:
           MELOTTS_REF: main
           MELOTTS_IMAGE: melotts-coolify:local
           SERVICE_NAME: melotts
-          TRAEFIK_SUBDOMAIN: tts
-          DOMAIN: example.com
           OUTPUT_HOST_DIR: ./output
           OUTPUT_DIR: /app/output
           # CI-only digest (user ciuser / password citest); replace in production — see docs/access-control.md

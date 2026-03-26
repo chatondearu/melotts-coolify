@@ -28,12 +28,11 @@ Concise context for AI coding agents working in this repository.
 
 ## Conventions when editing
 
-1. **Ports**: The process inside the container listens on **8888**. `HOST_PORT` is only for the **host** side in `docker-compose.local.yml`. Traefik `loadbalancer.server.port` must remain **8888** unless the upstream image changes.
+1. **Ports**: The process inside the container listens on **8888**. `HOST_PORT` is only for the **host** side in `docker-compose.local.yml`. On Coolify, the service domain in the UI should include **`:8888`** so the proxy targets the correct container port unless the upstream image changes.
 2. **Volumes**: Use `OUTPUT_HOST_DIR` on the host and `OUTPUT_DIR` inside the container; do not reuse one variable for both paths.
 3. **Compose**: After edits, ensure CI-equivalent validation passes:
    ```bash
-   SERVICE_NAME=melotts TRAEFIK_SUBDOMAIN=tts DOMAIN=example.com \
-     OUTPUT_HOST_DIR=./output OUTPUT_DIR=/app/output \
+   SERVICE_NAME=melotts OUTPUT_HOST_DIR=./output OUTPUT_DIR=/app/output \
      TRAEFIK_BASIC_AUTH_USERS='ciuser:$apr1$qZ2lDl9/$Yj5X2.Zpp9aGEO1HANtHi/' \
      docker compose -f docker-compose.yml config --quiet
    OUTPUT_HOST_DIR=./output OUTPUT_DIR=/app/output HOST_PORT=8888 \

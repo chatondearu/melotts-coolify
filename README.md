@@ -8,7 +8,7 @@ Deploy [**MeloTTS**](https://github.com/myshell-ai/MeloTTS) with **Docker Compos
 ## Features
 
 - French-first voices (and other MeloTTS languages) via an image **built from official MeloTTS source** (this repo’s `Dockerfile`).
-- **Coolify-ready** Compose file with Traefik labels (Coolify creates the stack network and wires the proxy).
+- **Coolify-ready** Compose file: minimal Traefik labels plus Coolify-managed domain / TLS (see [docs/coolify.md](docs/coolify.md)).
 - **Local compose** variant with a published port (no Traefik).
 - **OpenClaw-oriented** docs: Web UI vs local Python `melo.api` (see [docs/openclaw.md](docs/openclaw.md)).
 
@@ -30,7 +30,7 @@ There is **no** reliably available pre-built image such as `ghcr.io/myshell-ai/m
 
 1. Fork or clone this repo and connect it in Coolify as a **Docker Compose** resource (`docker-compose.yml` at repo root).
 2. Set variables from [.env.example](.env.example) in the Coolify UI (see [docs/coolify.md](docs/coolify.md) for a full walkthrough). Coolify attaches your stack to its own Docker network (resource UUID) and connects Traefik; you do not need a separate `TRAEFIK_NETWORK` variable.
-3. Deploy (build + run) and open `https://${TRAEFIK_SUBDOMAIN}.${DOMAIN}` — you should get the **Gradio** MeloTTS UI.
+3. Set the **`melotts`** service domain in Coolify to **`https://<your-host>:8888`** (see [docs/coolify.md](docs/coolify.md)), deploy, then open that URL — you should get the **Gradio** MeloTTS UI (after Basic Auth if enabled).
 
 ## Local development (no Traefik)
 
@@ -58,8 +58,6 @@ docker compose -f docker-compose.local.yml down
 | `MELOTTS_IMAGE` | Image name:tag after build (default `melotts-coolify:local`). |
 | `TORCH_INDEX_URL` | PyTorch wheel index at **image build** (default CPU: `https://download.pytorch.org/whl/cpu`). |
 | `SERVICE_NAME` | Container name (`melotts` by default). |
-| `TRAEFIK_SUBDOMAIN` | Subdomain for Traefik (e.g. `tts` → `tts.example.com`). |
-| `DOMAIN` | Apex domain (e.g. `example.com`). |
 | `HOST_PORT` | Host port when using `docker-compose.local.yml` (container listens on **8888**). |
 | `OUTPUT_HOST_DIR` | Host directory bind-mounted to `/app/output`. |
 | `OUTPUT_DIR` | In-container output path (default `/app/output`). |

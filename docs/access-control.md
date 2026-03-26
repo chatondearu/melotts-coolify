@@ -7,16 +7,16 @@ endpoint** (DoS, cost, abuse).
 
 ## Default in this repository (Coolify stack)
 
-[`docker-compose.yml`](../docker-compose.yml) enables **Traefik Basic Auth** by
-default. You **must** set `TRAEFIK_BASIC_AUTH_USERS` (see below). Compose fails at
-config time if it is unset (`:?` interpolation).
+[`docker-compose.yml`](../docker-compose.yml) defines a **Traefik Basic Auth
+middleware** (`melotts-auth`). You **must** set `TRAEFIK_BASIC_AUTH_USERS` (see below). Compose fails at config time if it is unset (`:?` interpolation).
+
+Coolify generates the HTTP router and attaches extra labels; it is expected to **merge** this middleware onto the route it creates for the service ([Coolify: Basic Auth on Docker Compose](https://coolify.io/docs/knowledge-base/proxy/traefik/basic-auth#docker-compose-and-services)). If your Coolify version does not apply the middleware automatically, append `melotts-auth` to the router’s `middlewares` label in the UI (see the same doc under *Standard Applications* for the append pattern).
 
 [`docker-compose.local.yml`](../docker-compose.local.yml) has **no** Traefik
 layer (localhost only) — Basic Auth does not apply there.
 
 To **turn off** proxy Basic Auth (not recommended on the public internet), remove
-the `traefik.http.routers.melotts.middlewares` label and the
-`traefik.http.middlewares.melotts-auth.*` labels from `docker-compose.yml`, and
+the `traefik.http.middlewares.melotts-auth.basicauth.users` label from `docker-compose.yml`, and
 use another control (SSO, VPN, IP allowlist) if the route stays public.
 
 Below are details and stronger patterns. Prefer **TLS + an identity layer** you
@@ -57,12 +57,12 @@ For **multiple** users, separate with a comma (each user still uses `htpasswd` f
 
 ### 1.3 Traefik labels
 
-These are **already present** in [`docker-compose.yml`](../docker-compose.yml).
-After setting `TRAEFIK_BASIC_AUTH_USERS`, redeploy; browsers will prompt for
-user / password.
+The **middleware** definition is **already present** in [`docker-compose.yml`](../docker-compose.yml).
+After setting `TRAEFIK_BASIC_AUTH_USERS`, redeploy; browsers should prompt for
+user / password once Coolify wires the middleware to the generated HTTPS router.
 
 **Limits:** shared password, no per-user audit UX, credential leak if HTTP were
-ever used (you use `websecure` — good). Rotate the hash if a password is exposed.
+ever used without redirects (prefer HTTPS-only exposure). Rotate the hash if a password is exposed.
 
 ## 2. Forward authentication (stronger)
 
@@ -73,9 +73,9 @@ Coolify-equivalent) middleware pointing to:
 - [Authelia](https://www.authelia.com/)
 - [Authentik](https://goauthentik.io/) (proxy provider)
 
-You deploy the IdP/proxy separately, then attach one middleware name to the same
-`traefik.http.routers.melotts` router. Exact labels depend on your Traefik version
-and provider.
+You deploy the IdP/proxy separately, then attach one middleware name to the **HTTPS
+router Coolify created** for this service (router name is dynamic per deployment).
+Exact labels depend on your Traefik version and provider.
 
 ## 3. Network / edge controls
 
@@ -97,8 +97,7 @@ Prefer proxy-level auth unless you have a strong reason to embed it in Python.
 ## 5. Coolify
 
 Check your Coolify version for **built-in** “protect resource” / SSO / basic
-auth features. If Coolify injects its own Traefik labels, align with this
-document so you do not define two conflicting routers for the same host.
+auth features. This repo avoids defining a duplicate `Host()` router in Compose so Coolify’s proxy labels stay authoritative; add custom middleware only when you need more than Basic Auth.
 
 ## Summary
 

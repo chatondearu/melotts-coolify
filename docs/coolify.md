@@ -1,7 +1,7 @@
 # Deploying on Coolify
 
 This repository ships a **Docker Compose** stack meant to run behind **Traefik**
-on a [Coolify](https://coolify.io) instance. Coolify can deploy directly from GitHub.
+managed by [Coolify](https://coolify.io). Coolify can deploy directly from GitHub.
 
 ## Prerequisites
 
@@ -25,9 +25,6 @@ Avoid defining custom top-level `networks` in the Compose file unless you need f
    | Variable             | Purpose |
    | -------------------- | ------- |
    | `SERVICE_NAME`       | Container name |
-   | `SERVICE_FQDN_MELOTTS` | Add this name with **no value** in Coolify so the platform generates the real hostname Traefik must match (see [magic variables](https://coolify.io/docs/knowledge-base/docker/compose#coolify-s-magic-environment-variables)). |
-   | `TRAEFIK_SUBDOMAIN`  | Fallback when `SERVICE_FQDN_MELOTTS` is unset (e.g. local `docker compose`); `tts` → `tts.example.com` with `DOMAIN` |
-   | `DOMAIN`             | Apex domain (e.g. `example.com`) |
    | `OUTPUT_HOST_DIR`    | Host path for generated audio (bind mount) |
    | `OUTPUT_DIR`         | In-container output path (default `/app/output`) |
    | `MELOTTS_REPO`       | Git URL to clone at image build (default upstream) |
@@ -36,19 +33,15 @@ Avoid defining custom top-level `networks` in the Compose file unless you need f
    | `TORCH_INDEX_URL`    | PyTorch wheel index at **build** time (default CPU: `https://download.pytorch.org/whl/cpu`). Use a CUDA index only if your builder supports GPU wheels and you need CUDA at runtime. |
    | `TRAEFIK_BASIC_AUTH_USERS` | **Required.** One or more `htpasswd` user digests for Traefik Basic Auth (browser login before Gradio). See [docs/access-control.md](access-control.md). |
 
-5. **Domains (required for Traefik):** On the `melotts` service in Coolify, set a domain like **`https://tts.example.com:8888`** (use your real host; **`:8888`** tells the proxy to forward to MeloTTS inside the container). Without this, `SERVICE_FQDN_MELOTTS` will not resolve to a valid name and Let’s Encrypt will fail.
+5. **Domain (required for public URL):** On the **`melotts`** service, set a URL like **`https://tts.example.com:8888`** (replace with your real host). The **`:8888`** suffix tells Coolify’s proxy to forward to MeloTTS inside the container ([Compose domains](https://coolify.io/docs/knowledge-base/docker/compose#domains)). Coolify generates Traefik routers, TLS, and entrypoints for you — do not duplicate `Host(...)`, `entrypoints`, or `certresolver` in the compose file unless you have an advanced use case.
 
-6. Deploy. Coolify will **build** the MeloTTS image from this repo’s `Dockerfile`, then start the stack. Set `MELOTTS_IMAGE` if you want Coolify to tag/push the build to your own registry. The public route is protected by **Basic Auth** unless you remove those labels (see access-control doc).
+6. Deploy. Coolify will **build** the MeloTTS image from this repo’s `Dockerfile`, then start the stack. Set `MELOTTS_IMAGE` if you want Coolify to tag/push the build to your own registry. The stack adds a **Basic Auth** middleware label; Coolify attaches it to the generated route ([Basic Auth on Compose services](https://coolify.io/docs/knowledge-base/proxy/traefik/basic-auth#docker-compose-and-services)).
 
-## 3. Traefik labels
+## 3. Traefik and this repository
 
-Coolify’s Traefik exposes **HTTPS** on the entrypoint named **`https`** (not `websecure`). The compose file uses that name and builds the `Host()` rule from **`SERVICE_FQDN_MELOTTS`** when Coolify injects it, with a fallback to `${TRAEFIK_SUBDOMAIN}.${DOMAIN}` for non-Coolify runs. The router uses the **`letsencrypt`** certificate resolver like Coolify’s bundled Traefik.
+[`docker-compose.yml`](../docker-compose.yml) only sets **`traefik.enable=true`** and a **Basic Auth middleware** definition. All routing, HTTPS entrypoints, and Let’s Encrypt are intended to come from **Coolify’s proxy configuration** after you assign the domain in step 5.
 
-If Traefik logs show **`EntryPoint doesn't exist ... websecure`**, you are on an older image of this repo: pull the latest `docker-compose.yml` or change `entrypoints` to **`https`**.
-
-If Let’s Encrypt tries to issue for a name like **`${traefik_subdomain}.${domain}`**, Coolify did not substitute env vars in labels: ensure **`SERVICE_FQDN_MELOTTS`** is declared for the service (see step 4) and the service **domain** is set in the UI (step 5).
-
-A **Basic Auth** middleware is attached by default (`TRAEFIK_BASIC_AUTH_USERS`). If your instance uses a different certificate resolver name, adjust the labels in `docker-compose.yml`.
+If Basic Auth does not appear after deploy, check your Coolify version against the linked docs, or use Coolify’s **Custom Docker Options** / label merge UI to attach the middleware name (`melotts-auth`) to the router Coolify created (same pattern as [Standard applications](https://coolify.io/docs/knowledge-base/proxy/traefik/basic-auth#standard-application): append `melotts-auth` to the router’s `middlewares` list).
 
 ## 4. Updates and redeploys
 
