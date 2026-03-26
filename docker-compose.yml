@@ -11,14 +11,17 @@ services:
     container_name: ${SERVICE_NAME:-melotts}
     restart: unless-stopped
     environment:
+      # Coolify: declare SERVICE_FQDN_MELOTTS (no value) so the platform injects the real FQDN for Traefik — see docs/coolify.md
+      - SERVICE_FQDN_MELOTTS
       - OUTPUT_DIR=${OUTPUT_DIR:-/app/output}
     volumes:
       - ${OUTPUT_HOST_DIR:-./output}:/app/output
     # Traefik backend port must match the upstream image (MeloTTS listens on 8888).
     labels:
       - traefik.enable=true
-      - traefik.http.routers.melotts.rule=Host(`${TRAEFIK_SUBDOMAIN}.${DOMAIN}`)
-      - traefik.http.routers.melotts.entrypoints=websecure
+      # Coolify Traefik uses entrypoint "https" (not "websecure"). Host must be a real FQDN: Coolify sets SERVICE_FQDN_MELOTTS; locally use TRAEFIK_SUBDOMAIN + DOMAIN via the fallback below.
+      - traefik.http.routers.melotts.rule=Host(`${SERVICE_FQDN_MELOTTS:-${TRAEFIK_SUBDOMAIN}.${DOMAIN}}`)
+      - traefik.http.routers.melotts.entrypoints=https
       - traefik.http.routers.melotts.tls.certresolver=letsencrypt
       - traefik.http.services.melotts.loadbalancer.server.port=8888
       # Basic Auth on by default for Coolify (Gradio has no login). Set TRAEFIK_BASIC_AUTH_USERS.
