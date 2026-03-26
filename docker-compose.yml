@@ -26,8 +26,6 @@ services:
       # To disable: remove the middlewares router label and the two melotts-auth middleware labels below.
       - traefik.http.routers.melotts.middlewares=melotts-auth
       - traefik.http.middlewares.melotts-auth.basicauth.users=${TRAEFIK_BASIC_AUTH_USERS:?Set TRAEFIK_BASIC_AUTH_USERS for Traefik Basic Auth (see docs/access-control.md)}
-    networks:
-      - traefik_network
     healthcheck:
       test:
         [
@@ -42,8 +40,3 @@ services:
       resources:
         limits:
           memory: 1G
-
-networks:
-  traefik_network:
-    name: ${TRAEFIK_NETWORK:-traefik_network}
-    external: true

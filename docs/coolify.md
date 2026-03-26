@@ -7,33 +7,13 @@ on a [Coolify](https://coolify.io) instance. Coolify can deploy directly from Gi
 
 - Coolify with Docker and Traefik (or your reverse proxy) already working.
 - A DNS name that resolves to your server (for TLS via Let’s Encrypt).
-- The **external** Docker network that Traefik uses (see below).
 - **First deploy builds the image** from [Dockerfile](../Dockerfile) (clone MeloTTS, PyTorch CPU wheels by default, `pip install -e .`, model downloads). Default **`TORCH_INDEX_URL`** keeps builds smaller and faster than letting pip resolve CUDA stacks from PyPI. Allow enough **RAM**, **disk**, and **build time** (often several minutes to 20+ depending on the host). There is **no** maintained pre-built `ghcr.io/myshell-ai/melotts` image at the time of writing.
 
-## 1. Find the Traefik network name
+## 1. Docker networking on Coolify
 
-The base [docker-compose.yml](../docker-compose.yml) attaches the service to an
-**external** network so Traefik can route to MeloTTS.
+Per [Coolify’s Docker Compose docs](https://coolify.io/docs/knowledge-base/docker/compose), each Compose stack gets its **own Docker network**, named after the **resource UUID** (Coolify exposes this as `COOLIFY_RESOURCE_UUID`). Coolify attaches the **proxy** (Traefik) to that network, so services can be reached from the proxy without declaring an `external: true` network in your file.
 
-On your Coolify server, identify the network Traefik is connected to. Names vary
-by Coolify version and install path. Examples you might see include network names
-containing `traefik` or `coolify`. Use:
-
-```bash
-docker network ls
-```
-
-Set `TRAEFIK_NETWORK` in your environment (Coolify UI → Environment variables)
-to that **exact** name. The compose file uses:
-
-```yaml
-networks:
-  traefik_network:
-    name: ${TRAEFIK_NETWORK:-traefik_network}
-    external: true
-```
-
-If your Docker network is `coolify-proxy`, set `TRAEFIK_NETWORK=coolify-proxy`.
+Avoid defining custom top-level `networks` in the Compose file unless you need features like **Connect to Predefined Network** (cross-stack access): that can conflict with Coolify’s expectations and with magic variables such as `COOLIFY_RESOURCE_UUID` (see [coollabsio/coolify#6401](https://github.com/coollabsio/coolify/issues/6401)).
 
 ## 2. Create the Compose resource in Coolify
 
@@ -49,7 +29,6 @@ If your Docker network is `coolify-proxy`, set `TRAEFIK_NETWORK=coolify-proxy`.
    | `DOMAIN`             | Apex domain (e.g. `example.com`) |
    | `OUTPUT_HOST_DIR`    | Host path for generated audio (bind mount) |
    | `OUTPUT_DIR`         | In-container output path (default `/app/output`) |
-   | `TRAEFIK_NETWORK`    | External Traefik Docker network (see step 1) |
    | `MELOTTS_REPO`       | Git URL to clone at image build (default upstream) |
    | `MELOTTS_REF`        | Branch or tag to build (default `main`) |
    | `MELOTTS_IMAGE`      | Name/tag for the built image (optional; set when pushing to a registry) |

@@ -26,7 +26,6 @@ jobs:
           DOMAIN: example.com
           OUTPUT_HOST_DIR: ./output
           OUTPUT_DIR: /app/output
-          TRAEFIK_NETWORK: traefik_network
           # CI-only digest (user ciuser / password citest); replace in production — see docs/access-control.md
           TRAEFIK_BASIC_AUTH_USERS: ciuser:$apr1$qZ2lDl9/$Yj5X2.Zpp9aGEO1HANtHi/
         run: docker compose -f docker-compose.yml config --quiet

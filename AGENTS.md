@@ -13,7 +13,7 @@ Concise context for AI coding agents working in this repository.
 | ---- | ---- |
 | `Dockerfile` | Builds MeloTTS from `MELOTTS_REPO` / `MELOTTS_REF` on **`python:3.9-slim-bookworm`**. Installs **`torch` / `torchaudio` first** from **`TORCH_INDEX_URL`**, then **`pip install -e . -c /tmp/pip-constraints.txt`**. After clone, patches **`torch.load`** (`weights_only=False`) and **`TTS(..., use_hf=False)`** in **`init_downloads.py`**, **`app.py`**, **`main.py`** so weights load from MyShell S3 (not Hugging Face) during build and at WebUI startup. |
 | `pip-constraints.txt` | Pip constraint file copied into the image: **`setuptools<82`** (82+ drops `pkg_resources` and breaks **librosa** / MeloTTS), plus Gradio / `networkx` pins. |
-| `docker-compose.yml` | Coolify / Traefik stack; external proxy network `TRAEFIK_NETWORK`; backend port **8888** (MeloTTS default). |
+| `docker-compose.yml` | Coolify / Traefik stack; **no** manual proxy network (Coolify creates the stack network and connects Traefik). Backend port **8888** (MeloTTS default). |
 | `docker-compose.local.yml` | Standalone local stack; publishes `HOST_PORT` → container **8888**. |
 | `.env.example` | Authoritative list of env vars (comments **English**). |
 | `docs/coolify.md` | Coolify deploy walkthrough. |
@@ -33,7 +33,7 @@ Concise context for AI coding agents working in this repository.
 3. **Compose**: After edits, ensure CI-equivalent validation passes:
    ```bash
    SERVICE_NAME=melotts TRAEFIK_SUBDOMAIN=tts DOMAIN=example.com \
-     OUTPUT_HOST_DIR=./output OUTPUT_DIR=/app/output TRAEFIK_NETWORK=traefik_network \
+     OUTPUT_HOST_DIR=./output OUTPUT_DIR=/app/output \
      TRAEFIK_BASIC_AUTH_USERS='ciuser:$apr1$qZ2lDl9/$Yj5X2.Zpp9aGEO1HANtHi/' \
      docker compose -f docker-compose.yml config --quiet
    OUTPUT_HOST_DIR=./output OUTPUT_DIR=/app/output HOST_PORT=8888 \

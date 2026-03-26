@@ -8,7 +8,7 @@ Deploy [**MeloTTS**](https://github.com/myshell-ai/MeloTTS) with **Docker Compos
 ## Features
 
 - French-first voices (and other MeloTTS languages) via an image **built from official MeloTTS source** (this repo’s `Dockerfile`).
-- **Coolify-ready** Compose file with Traefik labels and an external proxy network.
+- **Coolify-ready** Compose file with Traefik labels (Coolify creates the stack network and wires the proxy).
 - **Local compose** variant with a published port (no Traefik).
 - **OpenClaw-oriented** docs: Web UI vs local Python `melo.api` (see [docs/openclaw.md](docs/openclaw.md)).
 
@@ -29,9 +29,8 @@ There is **no** reliably available pre-built image such as `ghcr.io/myshell-ai/m
 ## Quick start (Coolify + GitHub)
 
 1. Fork or clone this repo and connect it in Coolify as a **Docker Compose** resource (`docker-compose.yml` at repo root).
-2. On the server, find the **external** Docker network used by Traefik (`docker network ls`), then set `TRAEFIK_NETWORK` accordingly.
-3. Set variables from [.env.example](.env.example) in the Coolify UI (see [docs/coolify.md](docs/coolify.md) for a full walkthrough).
-4. Deploy (build + run) and open `https://${TRAEFIK_SUBDOMAIN}.${DOMAIN}` — you should get the **Gradio** MeloTTS UI.
+2. Set variables from [.env.example](.env.example) in the Coolify UI (see [docs/coolify.md](docs/coolify.md) for a full walkthrough). Coolify attaches your stack to its own Docker network (resource UUID) and connects Traefik; you do not need a separate `TRAEFIK_NETWORK` variable.
+3. Deploy (build + run) and open `https://${TRAEFIK_SUBDOMAIN}.${DOMAIN}` — you should get the **Gradio** MeloTTS UI.
 
 ## Local development (no Traefik)
 
@@ -64,7 +63,6 @@ docker compose -f docker-compose.local.yml down
 | `HOST_PORT` | Host port when using `docker-compose.local.yml` (container listens on **8888**). |
 | `OUTPUT_HOST_DIR` | Host directory bind-mounted to `/app/output`. |
 | `OUTPUT_DIR` | In-container output path (default `/app/output`). |
-| `TRAEFIK_NETWORK` | Real Docker network name Traefik uses (external network in prod compose). |
 | `TRAEFIK_BASIC_AUTH_USERS` | **Required** for `docker-compose.yml`: htpasswd line for Traefik Basic Auth (see [docs/access-control.md](docs/access-control.md)). Not used by `docker-compose.local.yml`. |
 
 ## OpenClaw
